@@ -8,3 +8,13 @@ doh_raw <- fromJSON(json_file)
 cases_doh <- as_tibble(doh_raw$features$attributes) ## make the table
 names(cases_doh) <- c("case", "caseID", "age", "sex", "nationality", "residence", "travel_history", "symptoms", "positive_date", "facility", "latitude", "longitude", "status", "link_desc", "updated","x","y") ## properly label the columns
 cases_doh
+
+# Clean Data
+cases_doh <- cases_doh %>%  
+  mutate_at(vars(names(cases_doh)), na_if, " ") %>% ## make blank values NA
+  mutate_at(vars(names(cases_doh)), na_if, "For validation") %>%
+  mutate_at(vars(names(cases_doh)), na_if,  "For Validation") %>%
+  mutate(positive_date = mdy(positive_date), ## format dates
+         updated = mdy_hm(updated),
+         sex = as.factor(sex), ## factor sex and nationality
+         nationality = as.factor(nationality))
