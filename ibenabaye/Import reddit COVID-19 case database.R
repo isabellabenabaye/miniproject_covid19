@@ -1,5 +1,6 @@
 library(tidyverse)
 library(rvest)
+library(lubridate)
 
 # Preparing Data
 ## import data from the r/Coronavirus_PH Google sheet
@@ -8,5 +9,34 @@ page <- read_html(url) ## creates an html document from URL
 table <- html_table(page, fill = TRUE) ## parses tables into data frames
 
 cases_reddit <- as_tibble(table[[1]]) ## make the table
-names(cases_reddit) <- c("case", "age", "sex", "nationality", "status1", "status2", "positive_date", "onset_date", "fever", "cough", "sore throat", "pneumonia", "symptoms_others", "other_conditions", "facility", "residence", "travel", "travel_history", "case_link", "link_desc", "details", "source", "column3", "column4", "column5", "column6", "column7", "column8", "column9", "column10") ## properly label the columns
 cases_reddit <- cases_reddit[-1, 1:22] ## remove unnecessary rows/columns
+names(cases_reddit) <- c("case", "age", "sex", "nationality", "status1", "status_admitted", "positive_date", "onset_date", "fever", "cough", "sore_throat", "pneumonia", "symptoms_others", "other_conditions", "facility", "residence", "travel", "travel_history", "case_link", "link_desc", "details", "source") ## properly label the columns
+
+
+# Clean Data
+symptoms_ind <- function(symptom, fever) {  ## creating a function for standardizing the symptoms
+  case_when(fever == "undisclosed" | fever == "under investigation" ~ NA_character_,
+            symptom == "x" ~ "Yes",
+            symptom == "" ~ "No")
+  }
+
+cases_reddit <- cases_reddit %>%  
+  mutate_at(vars(names(cases_reddit)), na_if, "-") %>% ## replace "-", "?", and blanks with NA
+  mutate_at(vars(names(cases_reddit)), na_if, "?") %>% 
+  separate(status1, c("status", "status_date"), sep = "[()]") %>% ## split status variables
+  mutate(travel = as.factor(travel), ## make variables factors
+         sex = as.factor(sex),
+         nationality = as.factor(nationality),
+         cough = symptoms_ind(cough, fever), ## format the symptoms
+         sore_throat = symptoms_ind(sore_throat, fever),
+         pneumonia = symptoms_ind(pneumonia, fever),
+         symptoms_others = if_else(fever == "asymptomatic (no symptoms)", "asymptomatic (no symptoms)", symptoms_others), ## noting the asymptomatic cases in symptoms_others instead
+         fever = case_when(fever == "undisclosed" | fever == "under investigation" ~ NA_character_, 
+                           fever == "asymptomatic (no symptoms)" | fever == "" ~ "No",
+                           fever == "x" ~ "Yes"))
+  
+cases_reddit <- cases_reddit %>%  
+  mutate_at(vars(names(cases_reddit)), na_if, "") %>% # remove blanks before formatting dates
+  mutate(positive_date = mdy(str_c(positive_date, ", 2020")), ## format dates
+         onset_date = mdy(str_c(onset_date, ", 2020")),
+         status_date = mdy(str_c(status_date, ", 2020")))
