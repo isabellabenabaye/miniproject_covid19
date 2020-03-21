@@ -21,8 +21,9 @@ symptoms_ind <- function(symptom, fever) {  ## creating a function for standardi
   }
 
 cases_reddit <- cases_reddit %>%  
-  mutate_at(vars(names(cases_reddit)), na_if, "-") %>% ## replace "-", "?", and blanks with NA
+  mutate_at(vars(names(cases_reddit)), na_if, "-") %>% ## replace "-", "?","For Validation", and blanks with NA
   mutate_at(vars(names(cases_reddit)), na_if, "?") %>% 
+  mutate_at(vars(names(cases_reddit)), na_if, "For Validation") %>% 
   separate(status1, c("status", "status_date"), sep = "[()]") %>% ## split status variables
   mutate(travel = as.factor(travel), ## make variables factors
          sex = as.factor(sex),
@@ -30,13 +31,16 @@ cases_reddit <- cases_reddit %>%
          cough = symptoms_ind(cough, fever), ## format the symptoms
          sore_throat = symptoms_ind(sore_throat, fever),
          pneumonia = symptoms_ind(pneumonia, fever),
+         status = if_else(status == "Died ", "Dead", trimws(status)), ## make the statuses uniform
          symptoms_others = if_else(fever == "asymptomatic (no symptoms)", "asymptomatic (no symptoms)", symptoms_others), ## noting the asymptomatic cases in symptoms_others instead
          fever = case_when(fever == "undisclosed" | fever == "under investigation" ~ NA_character_, 
                            fever == "asymptomatic (no symptoms)" | fever == "" ~ "No",
                            fever == "x" ~ "Yes"))
   
+
 cases_reddit <- cases_reddit %>%  
   mutate_at(vars(names(cases_reddit)), na_if, "") %>% # remove blanks before formatting dates
   mutate(positive_date = mdy(str_c(positive_date, ", 2020")), ## format dates
          onset_date = mdy(str_c(onset_date, ", 2020")),
          status_date = mdy(str_c(status_date, ", 2020")))
+
