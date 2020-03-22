@@ -21,24 +21,27 @@ symptoms_ind <- function(symptom) {  ## creating a function for standardizing th
   case_when(cases_reddit$fever == "undisclosed" | cases_reddit$fever == "under investigation" ~ NA_character_,
             symptom == "x" ~ "Yes",
             symptom == "" | symptom == "asymptomatic (no symptoms)" ~ "No",
-            TRUE ~ symptom)
+            TRUE ~ symptom) ## catch other values
 } ## I used this function below
-others <- orig$symptoms_others %>% unique() %>% strsplit(", ") %>% unlist() 
+others <- cases_reddit$symptoms_others %>% strsplit(", ") %>% unlist() %>% unique() ## list other symptoms
 
 cases_reddit <- cases_reddit %>%  
   
   ## Making other_symptoms have their own column
   separate(symptoms_others, c('symptoms_others1', 'symptoms_others2'), sep = ", ") %>%
   mutate(others1 = ifelse(symptoms_others1 != "", "Yes", "No"),
-         others2 = ifelse(symptoms_others1 != "", "Yes", "No")) %>% ## make the statuses uniform
+         others2 = ifelse(symptoms_others1 != "", "Yes", "No")) %>% ## make the symptoms_others indicators uniform
   spread(symptoms_others1, others1, fill = "No") %>% 
   spread(symptoms_others2, others2, fill = "No") %>%
 
-  ## Fixing main symptoms column
+  ## Fixing main symptoms columns
   mutate_all(function (x) ifelse(x %in% c("-", "?", "For Validation"), NA, x)) %>% ## replace "-", "?","For Validation", and blanks with NA
-  mutate_at(vars(cough, sore_throat, pneumonia, fever), symptoms_ind) %>% ## apply symptoms_ind fn to the main symptoms
+  mutate(asymptomatic = case_when(fever == "asymptomatic (no symptoms)" ~ "Yes",   ## add indicator for asymptotic cases
+                                  cases_reddit$fever == "undisclosed" | cases_reddit$fever == "under investigation" ~ NA_character_,
+                                  TRUE ~ "No")) %>%
+  mutate_at(vars(cough, sore_throat, pneumonia, fever, others), symptoms_ind) %>%  ## apply symptoms_ind fn to the main symptoms
   
-  ## Others
+  ## Fixing the status column
   separate(status1, c("status", "status_end_date"), sep = "[()]") %>% ## split status variables
   mutate(status = ifelse(status == "Died ", "Dead", trimws(status))) %>% ## Make status uniform
   
@@ -56,7 +59,7 @@ cases_reddit <- cases_reddit %>%
          status, status_end_date, status_admitted, 
          positive_date, onset_date,
          fever, cough, sore_throat, pneumonia,
-         others,
+         others, asymptomatic,
          other_conditions,
          facility, residence,
          travel, travel_history,
