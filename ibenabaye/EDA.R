@@ -54,6 +54,6 @@ cases_by_date %>%
   labs(title = "Confirmed cases") +
   xlab("") + ylab("Total confirmed cases") +
   geom_col(fill = "orange") +
-  scale_y_continuous(expand = expand_scale(mult = c(0,.05)))
+  scale_y_continuous(expand = expansion(mult = c(0,.05)))
 
 
