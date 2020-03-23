@@ -21,4 +21,6 @@ cases_doh <- cases_doh %>%
          positive_date = mdy(positive_date), ## format dates
          updated = mdy(updated),
          sex = as.factor(sex), ## factor sex and nationality
-         nationality = as.factor(nationality))
+         nationality = as.factor(nationality),
+         residence = as.factor(residence),
+         facility = as.factor(facility))
