@@ -1,15 +1,17 @@
+## Import data
 source("Import reddit COVID-19 case database.R")
 source("Import DOH COVID-19 case database.R")
 
 
+## Load libraries
 library(extrafont)
 library(ggrepel)
 
 loadfonts(device = "win", quiet = TRUE)
-fonttable <- fonttable()
-cases_reddit
+# fonttable <- fonttable()
 
-# Theme 
+
+## Theme 
 theme_set(theme_minimal())
 theme <- theme_update(text = element_text(family = "Source Sans Pro", size = 13),
                       plot.title = element_text("Franklin Gothic", size = 30, color = "gray20"),
@@ -21,7 +23,7 @@ theme <- theme_update(text = element_text(family = "Source Sans Pro", size = 13)
                       )
 
 
-# Join tables, with cases_doh as the main table
+## Join tables, with cases_doh as the main table
 cases_full <- cases_doh %>% 
   left_join(cases_reddit, by = c("case" = "case"), suffix = c("","_r"))
 # NOTES: as of 22MAR2020
@@ -102,12 +104,12 @@ cases_date %>%
   scale_y_continuous(expand = expansion(mult = c(0,.05))) +
   
   # Three Chinese national cases
-  annotate(geom = "curve", 
+  annotate(geom = "curve", # curve & arrow
            x = as.Date("2020-02-01"), y = 40, 
            xend = as.Date("2020-01-30"), yend = 5, 
            curvature = .23, color = "grey60", size = 0.4,  
            arrow = arrow(length = unit(2, "mm"))) +
-  annotate(geom = "label", x = as.Date("2020-02-01"), y = 40, size = 5,
+  annotate(geom = "label", x = as.Date("2020-02-01"), y = 40, size = 5, #label
            label = "Three Chinese \nnational cases", 
            family = "Source Sans Pro Light",
            hjust = "left",
@@ -115,7 +117,7 @@ cases_date %>%
            color = "grey50",
            label.size = NA) +
   
-  # "Community quarantine \n in Metro Manila", 
+  # Community quarantine in Metro Manila
   annotate(geom = "curve", 
            x = as.Date("2020-03-11"), y = 175, 
            xend = as.Date("2020-03-15"), yend = 133, 
@@ -129,7 +131,7 @@ cases_date %>%
            color = "grey50",
            label.size = NA) +
   
-  # "Enhanced community \n quarantine in Luzon"
+  # Enhanced community quarantine in Luzon
   annotate(geom = "curve", 
            x = as.Date("2020-03-12"), y = 230, 
            xend = as.Date("2020-03-16"), yend = 187, 
