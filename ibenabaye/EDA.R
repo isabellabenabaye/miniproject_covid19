@@ -93,27 +93,57 @@ cases_date %>%
 
 
 # cumulative number of cases per day with labels
-labels_tbl <- cases_date %>%  #labels
-  filter(positive_date %in% c(as.Date("2020-01-30"), as.Date("2020-03-15"), as.Date("2020-03-16"))) %>% 
-  add_column(label = c("Three Chinese \n national cases", "Community quarantine \n in Metro Manila", "Enhanced community \n quarantine in Luzon"))
-#, "President Duterte granted \n special temporary powers"))
+cases_date %>% 
+  ggplot(aes(x = positive_date, y = total)) +
+  labs(title = "Confirmed cases") +
+  xlab("") + ylab("Total confirmed cases") +
+  geom_col(fill = "orange") +
+  scale_x_date(expand = expansion(mult = c(0.03,0)), date_breaks = "5 days", date_labels = "%b %e", limits = c(min(cases_date$positive_date), max = max(cases_date$positive_date))) +
+  scale_y_continuous(expand = expansion(mult = c(0,.05))) +
+  
+  # Three Chinese national cases
+  annotate(geom = "curve", 
+           x = as.Date("2020-02-01"), y = 40, 
+           xend = as.Date("2020-01-30"), yend = 5, 
+           curvature = .23, color = "grey60", size = 0.4,  
+           arrow = arrow(length = unit(2, "mm"))) +
+  annotate(geom = "label", x = as.Date("2020-02-01"), y = 40, size = 5,
+           label = "Three Chinese \nnational cases", 
+           family = "Source Sans Pro Light",
+           hjust = "left",
+           lineheight = 0.9,
+           color = "grey50",
+           label.size = NA) +
+  
+  # "Community quarantine \n in Metro Manila", 
+  annotate(geom = "curve", 
+           x = as.Date("2020-03-11"), y = 175, 
+           xend = as.Date("2020-03-15"), yend = 133, 
+           curvature = -.23, color = "grey60", size = 0.4, 
+           arrow = arrow(length = unit(2, "mm"))) +
+  annotate(geom = "label", x = as.Date("2020-03-11"), y = 175, size = 5,
+           label = "Community quarantine\n in Metro Manila", 
+           family = "Source Sans Pro Light",
+           hjust = "right",
+           lineheight = 0.9,
+           color = "grey50",
+           label.size = NA) +
+  
+  # "Enhanced community \n quarantine in Luzon"
+  annotate(geom = "curve", 
+           x = as.Date("2020-03-12"), y = 230, 
+           xend = as.Date("2020-03-16"), yend = 187, 
+           curvature = -.23, color = "grey60", size = 0.4, 
+           arrow = arrow(length = unit(2, "mm"))) +
+  annotate(geom = "label", x = as.Date("2020-03-12"), y = 230, size = 5,
+           label = "Enhanced community\n quarantine in Luzon", 
+           family = "Source Sans Pro Light",
+           hjust = "right",
+           lineheight = 0.9,
+           color = "grey50",
+           label.size = NA) 
 
-  # plot
-  cases_date %>% 
-    ggplot(aes(x = positive_date, y = total)) +
-    labs(title = "Confirmed cases") +
-    xlab("") + ylab("Total confirmed cases") +
-    geom_col(fill = "orange") +
-    scale_x_date(expand = expansion(mult = c(0.03,0)), date_breaks = "5 days", date_labels = "%b %e", limits = c(min(cases_date$positive_date), max = max(cases_date$positive_date))) +
-    scale_y_continuous(expand = expansion(mult = c(0,.05))) +
-    geom_label_repel(data = labels_tbl, 
-                     aes(label = label),
-                     family = "Source Sans Pro Light",
-                     nudge_y = 30,
-                     nudge_x = -7,
-                     #label.padding = 0.3,
-                     segment.alpha = 1,
-                     label.size = NA) # remove border
+ggsave("Confirmed cases.png", device = "png")
   
   
 # cumulative number of cases per day & status
