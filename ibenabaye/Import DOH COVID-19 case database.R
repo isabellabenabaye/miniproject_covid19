@@ -23,4 +23,5 @@ cases_doh <- cases_doh %>%
          sex = as.factor(sex), ## factor sex and nationality
          nationality = as.factor(nationality),
          residence = as.factor(residence),
-         facility = as.factor(facility))
+         facility = as.factor(facility),
+         age = as.integer(age))
