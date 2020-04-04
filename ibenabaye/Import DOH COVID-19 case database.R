@@ -1,7 +1,7 @@
 library(tidyverse)
 library(jsonlite)
 library(lubridate)
-# library(maps)
+library(maps)
 
 # Prepare Data
 ## import data from the official PH DOH tracker
@@ -38,6 +38,7 @@ cases_doh <- raw_doh %>%
          facility = as.factor(facility))
 
 ## Travel: "Yes" "No"
+data("world.cities")
 countries <- paste(world.cities$country.etc, collapse = "|")
 cases_doh$travel <- ifelse(sapply(cases_doh$travel_history,
        function(x) {x %>%
