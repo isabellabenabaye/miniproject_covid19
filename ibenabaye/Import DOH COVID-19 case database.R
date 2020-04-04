@@ -38,8 +38,18 @@ cases_doh <- raw_doh %>%
          facility = as.factor(facility))
 
 ## Travel: "Yes" "No"
-# countries <- paste(world.cities$country.etc, collapse = "|")
-# sapply(cases_doh$travel_history, 
-#        function(x) {x %>%
-#                     str_replace_all("[()]|[;]", "") %>%
-#                     str_detect(countries)})
+countries <- paste(world.cities$country.etc, collapse = "|")
+cases_doh$travel <- ifelse(sapply(cases_doh$travel_history,
+       function(x) {x %>%
+                    str_replace_all("[()]|[;]", "") %>% ## replaces all paranthesis OR all ; with "" (deletes them)
+                    str_detect(countries)}) == TRUE, "Yes", "No")
+
+## Link: "1" "2"
+cases_doh$link_desc <- str_extract_all(cases_doh$travel_history, '(?<=PH)[0-9|-]+') %>%  
+                                    ## [0-9|-] : get one or more (+) numbers or dashes that are...
+                                    ## (?<=PH) : preceeded by "PH"
+  lapply(function(x) paste(unique(x), collapse = ", ")) %>%  ## collapse extracted digits into one string; unique(x) to make sure links are not repeated
+  unlist()
+cases_doh$link_desc <- case_when(cases_doh$link_desc %in% c("NA", "") ~ NA_character_,
+                                 str_detect(cases_doh$link_desc, "known COVID-19 case" ) ~ "Undisclosed contact", ## Some cases have exposure to COVID-19 case but did not specify who
+                                 TRUE ~ cases_doh$link_desc)
