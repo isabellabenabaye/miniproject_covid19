@@ -143,7 +143,8 @@ cases_date %>%
            hjust = "right",
            lineheight = 0.9,
            color = "grey50",
-           label.size = NA) 
+           label.size = NA)  +
+  theme(axis.ticks.x = element_line(colour = "gray80"))
 
 ggsave("Confirmed cases.png", device = "png")
   
@@ -158,7 +159,7 @@ cases_date_status %>%
   scale_color_manual(breaks = c("total", "recovered", "dead"),
                      values = c("gold", "springgreen3", "firebrick1"),
                      labels = c("Total", "Recovered", "Dead")) +
-  theme(legend.title = element_blank(),)
+  theme(legend.title = element_blank())
 
 
 # new cases per day
@@ -170,7 +171,8 @@ cases_date %>%
   geom_col(aes(fill = count)) +
   scale_y_continuous(expand = expansion(mult = c(0,.05))) +
   scale_x_date(expand = expansion(mult = c(0,0)), date_breaks = "5 days", date_labels = "%b %e", limits = c(min(cases_date$positive_date), max = max(cases_date$positive_date))) +
-  scale_fill_gradient(low = "yellow", high = "red", na.value = NA)
+  scale_fill_gradient(low = "yellow", high = "red", na.value = NA) +
+  theme(axis.ticks.x = element_line(colour = "gray80"))
 
 
 
