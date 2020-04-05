@@ -1,7 +1,48 @@
+library(tidyverse)
 library(extrafont)
 loadfonts(device = "win", quiet = TRUE)
 fonttable <- fonttable()
-cases_reddit
+
+# Sourcing codes
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+source('Import DOH COVID-19 case database.R')
+source('Import reddit COVID-19 case database.R')
+
+# Join tables, with cases_doh as the main table
+cases_full <- 
+  left_join(cases_doh %>% 
+              select(case, 
+                     caseID, 
+                     age, 
+                     sex, 
+                     nationality, 
+                     residence, 
+                     facility, 
+                     travel, 
+                     link_desc, 
+                     positive_date),
+            cases_reddit %>%
+              select(case,
+                     status,
+                     status_admitted,
+                     onset_date,
+                     others,
+                     asymptomatic,
+                     other_conditions),
+            by = c("case" = "case"))
+
+# NOTES: as of 22MAR2020
+## for fields that don't match, DOH data will be used
+## ages don't match (5 discrepancies)
+## confirmed/positive dates don't match (5 discrepancies)
+## sexes don't match (9 discrepancies)
+## residences don't match (10 discrepancies)
+## facilities don't match (7 discrepancies)
+
+# NOTES: as of 5APR2020
+## DOH was used for repeating columns
+## For features not in DOH (e.g., status, status_admitted, etc.), reddit columns were appended.
+## Plan was disccused found in Notion - Data Issues page.
 
 # Theme 
 theme_set(theme_minimal())
@@ -15,24 +56,13 @@ theme <- theme_update(text = element_text(family = "Source Sans Pro", size = 13)
                       )
 
 
-# Join tables, with cases_doh as the main table
-cases_full <- cases_doh %>% 
-  left_join(cases_reddit, by = c("case" = "case"), suffix = c("","_r"))
-# NOTES: as of 22MAR2020
-## for fields that don't match, DOH data will be used
-## ages don't match (5 discrepancies)
-## confirmed/positive dates don't match (5 discrepancies)
-## sexes don't match (9 discrepancies)
-## residences don't match (10 discrepancies)
-## facilities don't match (7 discrepancies)
-
 
 ## Distribution of cases
 # by age & sex
 cases_full %>% 
   mutate(age_groups = cut(age, seq(10,90,by=10)),
-         status_r = fct_relevel(status_r, "Admitted", "Recovered", "Dead")) %>%   ## group ages
-  ggplot(aes(y = age_groups, fill = status_r)) +
+         status = fct_relevel(status, "Admitted", "Recovered", "Dead")) %>%   ## group ages
+  ggplot(aes(y = age_groups, fill = status)) +
   labs(title = "Cases by age & health status") +
   xlab("") + ylab("Age") + labs(fill = "Health status") +
   geom_bar(position = position_stack(reverse = TRUE)) +  ## reorder fill colors

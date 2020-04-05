@@ -19,7 +19,7 @@ cases_doh <- raw_doh %>%
   mutate(residence = ifelse(str_detect(residence, ","), 
                             str_extract(residence, '\\b[^,]+$'),
                             residence)) %>%
-  mutate_at(vars(names(raw_doh)), function(x) {str_replace_all(x, "???", "??")}) %>% 
+  #mutate_at(vars(names(raw_doh)), function(x) {str_replace_all(x, "???", "??")}) %>% 
   mutate_at(vars(facility), function(x) {x <- str_to_title(x) 
                                         x <- ifelse(na.fill(str_locate(x, "The")[,1] == 1, FALSE), x, str_replace(x, "The", "the"))
                                         x <- str_replace(x, "Of", "of")
